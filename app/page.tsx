@@ -14,6 +14,8 @@ interface SummaryResult {
   mongoId: string
   supabaseId: number
   scrapedAt: string
+  aiPowered?: boolean
+  optimizedMode?: boolean
 }
 
 export default function Home() {
@@ -21,6 +23,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<SummaryResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [optimizedMode, setOptimizedMode] = useState(true)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,7 +34,10 @@ export default function Home() {
     setResult(null)
 
     try {
-      const response = await axios.post('/api/summarize', { url })
+      const response = await axios.post('/api/summarize', { 
+        url,
+        useOptimized: optimizedMode
+      })
       setResult(response.data.data)
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -49,11 +55,14 @@ export default function Home() {
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-            Blog Summarizer
+            🤖 AI-Powered Blog Summarizer
           </h1>
+          <p className="text-center text-gray-600 mb-6">
+            Powered by Google Gemini AI for intelligent summarization and Urdu translation
+          </p>
           
           <form onSubmit={handleSubmit} className="mb-8">
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-4">
               <input
                 type="url"
                 value={url}
@@ -69,6 +78,23 @@ export default function Home() {
               >
                 {loading ? 'Processing...' : 'Summarize'}
               </button>
+            </div>
+            
+            {/* AI Settings */}
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={optimizedMode}
+                  onChange={(e) => setOptimizedMode(e.target.checked)}
+                  className="rounded"
+                />
+                <span>⚡ Optimized Mode (faster processing)</span>
+              </label>
+              <div className="flex items-center gap-1">
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>Gemini AI Active</span>
+              </div>
             </div>
           </form>
 
@@ -90,14 +116,24 @@ export default function Home() {
                     {result.url}
                   </a>
                 </p>
-                <p className="text-sm text-gray-600">
-                  Word count: {result.wordCount} | Original length: {result.originalLength} characters
-                </p>
+                <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                  <span>Word count: {result.wordCount}</span>
+                  <span>Original length: {result.originalLength} characters</span>
+                  {result.aiPowered && (
+                    <span className="flex items-center gap-1 text-green-600">
+                      <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                      AI-Powered
+                    </span>
+                  )}
+                  {result.optimizedMode && (
+                    <span className="text-blue-600">⚡ Optimized</span>
+                  )}
+                </div>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  English Summary
+                  📝 AI Summary (English)
                 </h3>
                 <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">
                   {result.summary}
@@ -106,7 +142,7 @@ export default function Home() {
 
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Urdu Summary (اردو خلاصہ)
+                  🌍 AI Translation (اردو خلاصہ)
                 </h3>
                 <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg" dir="rtl">
                   {result.summaryUrdu}
@@ -116,7 +152,7 @@ export default function Home() {
               {result.keyPoints.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                    Key Points
+                    🎯 Key Points
                   </h3>
                   <ul className="space-y-2">
                     {result.keyPoints.map((point, index) => (
@@ -133,6 +169,7 @@ export default function Home() {
                 <p>✅ Saved to MongoDB (ID: {result.mongoId})</p>
                 <p>✅ Saved to Supabase (ID: {result.supabaseId})</p>
                 <p>📅 Processed: {new Date(result.scrapedAt).toLocaleString()}</p>
+                {result.aiPowered && <p>🤖 AI-Powered by Google Gemini</p>}
               </div>
             </div>
           )}
