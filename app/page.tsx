@@ -58,28 +58,35 @@ export default function Home() {
     setStep(0)
 
     try {
-      // Step 1: Show scraping step
+      // Step 1: Scraping blog content
       setStep(1)
+      await new Promise(resolve => setTimeout(resolve, 800))
       
+      // Step 2: Processing with Google Gemini
+      setStep(2)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Step 3: Translating to Urdu
+      setStep(3)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Step 4: Storing in MongoDB
+      setStep(4)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Step 5: Storing in Supabase
+      setStep(5)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Make the API call
       const response = await axios.post('/api/summarize', { 
         url,
         useOptimized: optimizedMode
       })
       
-      // Step 2: Show processing step
-      setStep(2)
-      
-      // Step 3: Show translation step
-      setStep(3)
-      
-      // Step 4: Show MongoDB storage step
-      setStep(4)
-      
-      // Step 5: Show Supabase storage step
-      setStep(5)
-      
       // Step 6: Complete
       setStep(6)
+      await new Promise(resolve => setTimeout(resolve, 500))
       
       setResult(response.data.data)
     } catch (err) {
@@ -174,22 +181,51 @@ export default function Home() {
         {/* Progress Steps */}
         {loading && (
           <Card className="mb-8 shadow-lg border-0 glass-effect">
-            <CardContent className="pt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Brain className="w-6 h-6 text-purple-600" />
+                Processing Your Request
+              </CardTitle>
+              <CardDescription>
+                Step {step} of {steps.length}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-4">
                 {steps.map((stepText, index) => (
-                  <div key={index} className="flex items-center gap-3 transition-all duration-300">
-                    {index < step ? (
+                  <div key={index} className="flex items-center gap-3 transition-all duration-500">
+                    {index + 1 < step ? (
                       <CheckCircle className="w-5 h-5 text-green-500 animate-pulse" />
-                    ) : index === step ? (
+                    ) : index + 1 === step ? (
                       <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
                     ) : (
                       <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
                     )}
-                    <span className={`transition-all duration-300 ${index < step ? 'text-green-700 font-medium' : index === step ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
+                    <span className={`transition-all duration-500 ${
+                      index + 1 < step 
+                        ? 'text-green-700 font-medium' 
+                        : index + 1 === step 
+                        ? 'text-blue-700 font-medium animate-pulse' 
+                        : 'text-gray-500'
+                    }`}>
                       {stepText}
                     </span>
                   </div>
                 ))}
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="mt-6">
+                <div className="flex justify-between text-sm text-gray-600 mb-2">
+                  <span>Progress</span>
+                  <span>{Math.round((step / steps.length) * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${(step / steps.length) * 100}%` }}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
