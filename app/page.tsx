@@ -1,7 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import React from 'react'
 import axios from 'axios'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, Globe, FileText, Database, Languages, CheckCircle, XCircle, Brain, Sparkles } from 'lucide-react'
 
 interface SummaryResult {
   title: string
@@ -16,6 +23,11 @@ interface SummaryResult {
   scrapedAt: string
   aiPowered?: boolean
   optimizedMode?: boolean
+  author?: string
+  publishedDate?: string
+  readTime?: string
+  tags?: string[]
+  content?: string
 }
 
 export default function Home() {
@@ -24,6 +36,17 @@ export default function Home() {
   const [result, setResult] = useState<SummaryResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [optimizedMode, setOptimizedMode] = useState(true)
+  const [step, setStep] = useState(0)
+  const [activeTab, setActiveTab] = useState('summary')
+
+  const steps = [
+    'Scraping blog content...',
+    'Processing with Google Gemini...',
+    'Translating to Urdu...',
+    'Storing in MongoDB...',
+    'Storing in Supabase...',
+    'Complete!'
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,12 +55,32 @@ export default function Home() {
     setLoading(true)
     setError(null)
     setResult(null)
+    setStep(0)
 
     try {
+      // Step 1: Show scraping step
+      setStep(1)
+      
       const response = await axios.post('/api/summarize', { 
         url,
         useOptimized: optimizedMode
       })
+      
+      // Step 2: Show processing step
+      setStep(2)
+      
+      // Step 3: Show translation step
+      setStep(3)
+      
+      // Step 4: Show MongoDB storage step
+      setStep(4)
+      
+      // Step 5: Show Supabase storage step
+      setStep(5)
+      
+      // Step 6: Complete
+      setStep(6)
+      
       setResult(response.data.data)
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -51,71 +94,145 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-            🤖 AI-Powered Blog Summarizer
-          </h1>
-          <p className="text-center text-gray-600 mb-6">
-            Powered by Google Gemini AI for intelligent summarization and Urdu translation
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 p-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Brain className="w-10 h-10 text-purple-600" />
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              Blog Summariser
+            </h1>
+            <Sparkles className="w-10 h-10 text-blue-600" />
+          </div>
+          <p className="text-gray-600 text-lg">
+            Powered by Google Gemini AI • MongoDB • Supabase
           </p>
-          
-          <form onSubmit={handleSubmit} className="mb-8">
-            <div className="flex gap-4 mb-4">
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="Enter blog URL to summarize..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Processing...' : 'Summarize'}
-              </button>
-            </div>
-            
-            {/* AI Settings */}
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={optimizedMode}
-                  onChange={(e) => setOptimizedMode(e.target.checked)}
-                  className="rounded"
-                />
-                <span>⚡ Optimized Mode (faster processing)</span>
-              </label>
-              <div className="flex items-center gap-1">
-                <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-                <span>Gemini AI Active</span>
+        </div>
+
+        {/* Input Section */}
+        <Card className="mb-8 shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <Globe className="w-6 h-6 text-blue-600" />
+              Enter Blog URL
+            </CardTitle>
+            <CardDescription className="text-lg">
+              Paste any blog URL to get AI-powered summary in English and Urdu
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <Input
+                    type="url"
+                    placeholder="https://example.com/blog-post"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    className="w-full h-12 text-lg"
+                    disabled={loading}
+                    required
+                  />
+                </div>
+                <Button 
+                  type="submit"
+                  disabled={loading} 
+                  className="h-12 px-8 text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      {steps[step - 1] || 'Processing...'}
+                    </>
+                  ) : (
+                    'Analyze & Summarize'
+                  )}
+                </Button>
               </div>
-            </div>
-          </form>
+              
+              {/* AI Settings */}
+              <div className="flex items-center gap-4 text-sm text-gray-600 mt-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={optimizedMode}
+                    onChange={(e) => setOptimizedMode(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span>⚡ Optimized Mode (faster processing)</span>
+                </label>
+                <div className="flex items-center gap-1">
+                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span>Gemini AI Active</span>
+                </div>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              <h3 className="font-semibold">Error:</h3>
-              <p>{error}</p>
-            </div>
-          )}
+        {/* Progress Steps */}
+        {loading && (
+          <Card className="mb-8 shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                {steps.map((stepText, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    {index < step ? (
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    ) : index === step ? (
+                      <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                    ) : (
+                      <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
+                    )}
+                    <span className={`${index < step ? 'text-green-700' : index === step ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
+                      {stepText}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-          {result && (
-            <div className="space-y-6">
-              <div className="border-b pb-4">
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                  {result.title}
-                </h2>
-                <p className="text-sm text-gray-600">
-                  Source: <a href={result.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+        {/* Error Alert */}
+        {error && (
+          <Alert className="mb-8 border-red-200 bg-red-50 shadow-lg">
+            <XCircle className="w-5 h-5 text-red-600" />
+            <AlertDescription className="text-red-800 text-lg">{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Results */}
+        {result && (
+          <div className="space-y-8">
+            {/* Article Info */}
+            <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-2xl text-gray-800">{result.title}</CardTitle>
+                <CardDescription className="flex flex-wrap gap-4 text-lg">
+                  <span>Source: <a href={result.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                     {result.url}
-                  </a>
-                </p>
+                  </a></span>
+                  {result.author && (
+                    <>
+                      <span>•</span>
+                      <span>By {result.author}</span>
+                    </>
+                  )}
+                  {result.publishedDate && (
+                    <>
+                      <span>•</span>
+                      <span>{result.publishedDate}</span>
+                    </>
+                  )}
+                  {result.readTime && (
+                    <>
+                      <span>•</span>
+                      <span>{result.readTime}</span>
+                    </>
+                  )}
+                </CardDescription>
                 <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
                   <span>Word count: {result.wordCount}</span>
                   <span>Original length: {result.originalLength} characters</span>
@@ -129,51 +246,183 @@ export default function Home() {
                     <span className="text-blue-600">⚡ Optimized</span>
                   )}
                 </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  📝 AI Summary (English)
-                </h3>
-                <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">
-                  {result.summary}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  🌍 AI Translation (اردو خلاصہ)
-                </h3>
-                <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg" dir="rtl">
-                  {result.summaryUrdu}
-                </p>
-              </div>
-
-              {result.keyPoints.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                    🎯 Key Points
-                  </h3>
-                  <ul className="space-y-2">
-                    {result.keyPoints.map((point, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-blue-600 mr-2">•</span>
-                        <span className="text-gray-700">{point}</span>
-                      </li>
+                {result.tags && result.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {result.tags.map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="text-sm">
+                        {tag}
+                      </Badge>
                     ))}
-                  </ul>
-                </div>
-              )}
+                  </div>
+                )}
+              </CardHeader>
+            </Card>
 
-              <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-                <p>✅ Saved to MongoDB (ID: {result.mongoId})</p>
-                <p>✅ Saved to Supabase (ID: {result.supabaseId})</p>
-                <p>📅 Processed: {new Date(result.scrapedAt).toLocaleString()}</p>
-                {result.aiPowered && <p>🤖 AI-Powered by Google Gemini</p>}
+            {/* Content Tabs */}
+            <div className="w-full">
+              <div className="grid w-full grid-cols-4 h-12 bg-white/70 backdrop-blur-sm rounded-lg p-1 mb-4">
+                <button
+                  onClick={() => setActiveTab('summary')}
+                  className={`rounded-md text-lg font-medium transition-all ${
+                    activeTab === 'summary' 
+                      ? 'bg-white shadow-sm text-gray-900' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  English Summary
+                </button>
+                <button
+                  onClick={() => setActiveTab('urdu')}
+                  className={`rounded-md text-lg font-medium transition-all ${
+                    activeTab === 'urdu' 
+                      ? 'bg-white shadow-sm text-gray-900' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  اردو خلاصہ
+                </button>
+                <button
+                  onClick={() => setActiveTab('keypoints')}
+                  className={`rounded-md text-lg font-medium transition-all ${
+                    activeTab === 'keypoints' 
+                      ? 'bg-white shadow-sm text-gray-900' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Key Points
+                </button>
+                <button
+                  onClick={() => setActiveTab('original')}
+                  className={`rounded-md text-lg font-medium transition-all ${
+                    activeTab === 'original' 
+                      ? 'bg-white shadow-sm text-gray-900' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Original Text
+                </button>
               </div>
+              
+              {activeTab === 'summary' && (
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <FileText className="w-6 h-6 text-blue-600" />
+                      English Summary
+                      <Badge variant="outline" className="ml-2">Google Gemini AI</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-lg max-w-none">
+                      <p className="text-gray-700 leading-relaxed text-lg">
+                        {result.summary}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {activeTab === 'urdu' && (
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Languages className="w-6 h-6 text-purple-600" />
+                      اردو خلاصہ
+                      <Badge variant="outline" className="ml-2">Google Gemini AI</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-lg max-w-none">
+                      <p className="text-gray-700 leading-relaxed text-lg text-right" dir="rtl">
+                        {result.summaryUrdu}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {activeTab === 'keypoints' && (
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Sparkles className="w-6 h-6 text-green-600" />
+                      Key Points
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {result.keyPoints.map((point, index) => (
+                        <div key={index} className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            {index + 1}
+                          </div>
+                          <p className="text-gray-700 text-lg leading-relaxed flex-1">
+                            {point}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {activeTab === 'original' && (
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Globe className="w-6 h-6 text-gray-600" />
+                      Original Article Content
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-lg max-w-none">
+                      <div className="text-gray-700 leading-relaxed whitespace-pre-line text-lg">
+                        {result.content || 'Original content not available'}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
-          )}
-        </div>
+
+            {/* Database Storage Status */}
+            <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Database className="w-6 h-6 text-orange-600" />
+                  Storage Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                    <div className="flex items-center gap-3 mb-4">
+                      <CheckCircle className="w-6 h-6 text-green-600" />
+                      <span className="font-bold text-green-800 text-lg">MongoDB</span>
+                    </div>
+                    <div className="space-y-2 text-sm text-green-700">
+                      <p><strong>Document ID:</strong> {result.mongoId}</p>
+                      <p><strong>Status:</strong> Full text + Summary stored</p>
+                      <p><strong>Processed:</strong> {new Date(result.scrapedAt).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                    <div className="flex items-center gap-3 mb-4">
+                      <CheckCircle className="w-6 h-6 text-blue-600" />
+                      <span className="font-bold text-blue-800 text-lg">Supabase</span>
+                    </div>
+                    <div className="space-y-2 text-sm text-blue-700">
+                      <p><strong>Record ID:</strong> {result.supabaseId}</p>
+                      <p><strong>Status:</strong> Metadata + Summaries stored</p>
+                      <p><strong>Features:</strong> English + Urdu summaries</p>
+                      {result.aiPowered && <p><strong>AI-Powered:</strong> Google Gemini</p>}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   )
