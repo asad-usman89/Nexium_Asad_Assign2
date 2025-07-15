@@ -152,12 +152,12 @@ export const englishToUrdu: { [key: string]: string } = {
 
 // Function to translate text to Urdu using Gemini AI (with dictionary fallback)
 export async function translateToUrdu(text: string): Promise<string> {
-  // Try AI-powered translation first
+  // Try AI-powered translation first with retry mechanism
   try {
-    const geminiResult = await geminiService.translateToUrdu(text)
+    const geminiResult = await geminiService.translateToUrduWithRetry(text)
     return geminiResult.translatedText
   } catch (error) {
-    console.warn('Gemini translation failed, falling back to dictionary method:', error)
+    console.warn('Gemini translation failed completely, falling back to dictionary method:', error)
     // Fall back to dictionary-based translation
     return translateToUrduStatic(text)
   }

@@ -1,4 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { 
+  containsUrduScript, 
+  normalizeUrduText, 
+  extractUrduText, 
+  validateUrduTranslation,
+  postProcessUrduTranslation 
+} from './urdu-utils'
 
 // Initialize Gemini API with error handling
 let genAI: GoogleGenerativeAI | null = null
@@ -26,7 +33,7 @@ export interface GeminiTranslationResult {
 }
 
 export class GeminiService {
-  private model = genAI?.getGenerativeModel({ model: "gemini-pro" })
+  private model = genAI?.getGenerativeModel({ model: "gemini-1.5-flash" })
 
   /**
    * Check if Gemini API is available
@@ -104,17 +111,40 @@ Please format your response as JSON with the following structure:
 
     try {
       const prompt = `
-Translate the following English text to Urdu. 
-Make sure the translation is accurate, natural, and maintains the meaning of the original text.
-Please provide only the Urdu translation without any additional text or explanations.
+You are an expert English to Urdu translator. Translate the following English text to Urdu with these guidelines:
 
-Text to translate:
+1. Provide a natural, fluent Urdu translation that maintains the original meaning
+2. Use appropriate Urdu vocabulary and sentence structure
+3. Ensure the translation is grammatically correct in Urdu
+4. Keep technical terms in their commonly understood form
+5. Maintain the tone and style of the original text
+6. Use proper Urdu script (Arabic script)
+7. Provide ONLY the Urdu translation - no explanations, no original text, no additional commentary
+
+English text to translate:
 ${text}
+
+Urdu translation:
 `
 
       const result = await this.model!.generateContent(prompt)
       const response = await result.response
-      const translatedText = response.text().trim()
+      let translatedText = response.text().trim()
+
+      // Clean up the response - remove any English text or explanations
+      translatedText = this.cleanUrduTranslation(translatedText)
+
+      // Validate the translation quality
+      const validation = validateUrduTranslation(text, translatedText)
+      
+      if (!validation.isValid) {
+        console.warn('Translation quality issues:', validation.issues)
+        
+        // If validation fails, try fallback translation
+        if (validation.issues.includes('Translation does not contain Urdu script')) {
+          translatedText = this.fallbackTranslation(text)
+        }
+      }
 
       return {
         originalText: text,
@@ -133,6 +163,34 @@ ${text}
   }
 
   /**
+   * Translate text to Urdu with retry mechanism
+   */
+  async translateToUrduWithRetry(text: string, maxRetries: number = 2): Promise<GeminiTranslationResult> {
+    let lastError: Error | null = null
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await this.translateToUrdu(text)
+      } catch (error) {
+        lastError = error as Error
+        console.warn(`Translation attempt ${attempt} failed:`, error)
+        
+        if (attempt < maxRetries) {
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        }
+      }
+    }
+
+    console.error('All translation attempts failed, using fallback')
+    return {
+      originalText: text,
+      translatedText: this.fallbackTranslation(text),
+      language: 'urdu'
+    }
+  }
+
+  /**
    * Generate both summary and translation in one call for efficiency
    */
   async generateSummaryAndTranslation(content: string): Promise<{
@@ -145,19 +203,27 @@ ${text}
 
     try {
       const prompt = `
-Please analyze the following blog content and provide:
-1. A concise English summary (3-5 sentences)
-2. Key points (3-5 bullet points)
-3. Urdu translation of the summary
+You are an expert content analyzer and translator. Please analyze the following blog content and provide:
 
-Content:
+1. A concise English summary (3-5 sentences)
+2. Key points (3-5 bullet points)  
+3. A natural, fluent Urdu translation of the summary
+
+Guidelines for Urdu translation:
+- Use proper Urdu vocabulary and sentence structure
+- Maintain the original meaning and tone
+- Ensure grammatical correctness in Urdu
+- Use appropriate Urdu script (Arabic script)
+- Make it sound natural to native Urdu speakers
+
+Content to analyze:
 ${content}
 
 Please format your response as JSON with the following structure:
 {
-  "summary": "your English summary here",
-  "keyPoints": ["point 1", "point 2", "point 3"],
-  "summaryUrdu": "your Urdu translation of the summary here"
+  "summary": "your concise English summary here",
+  "keyPoints": ["key point 1", "key point 2", "key point 3"],
+  "summaryUrdu": "آپ کا اردو خلاصہ یہاں"
 }
 `
 
@@ -182,9 +248,24 @@ Please format your response as JSON with the following structure:
         originalLength: content.length
       }
 
+      let urduTranslation = parsedResponse.summaryUrdu || 'Unable to translate'
+      urduTranslation = this.cleanUrduTranslation(urduTranslation)
+      
+      // Validate the translation quality
+      const validation = validateUrduTranslation(parsedResponse.summary || '', urduTranslation)
+      
+      if (!validation.isValid) {
+        console.warn('Combined translation quality issues:', validation.issues)
+        
+        // If validation fails, try fallback translation
+        if (validation.issues.includes('Translation does not contain Urdu script')) {
+          urduTranslation = this.fallbackTranslation(parsedResponse.summary || '')
+        }
+      }
+
       const translation: GeminiTranslationResult = {
         originalText: parsedResponse.summary || 'Unable to generate summary',
-        translatedText: parsedResponse.summaryUrdu || 'Unable to translate',
+        translatedText: urduTranslation,
         language: 'urdu'
       }
 
@@ -234,7 +315,52 @@ Please format your response as JSON with the following structure:
       'that': 'یہ',
       'it': 'یہ',
       'with': 'کے ساتھ',
-      'for': 'کے لیے'
+      'for': 'کے لیے',
+      'as': 'جیسے',
+      'was': 'تھا',
+      'on': 'پر',
+      'are': 'ہیں',
+      'you': 'آپ',
+      'this': 'یہ',
+      'be': 'ہونا',
+      'at': 'پر',
+      'by': 'کے ذریعے',
+      'not': 'نہیں',
+      'or': 'یا',
+      'have': 'ہے',
+      'from': 'سے',
+      'they': 'وہ',
+      'we': 'ہم',
+      'but': 'لیکن',
+      'can': 'کر سکتے ہیں',
+      'out': 'باہر',
+      'other': 'دوسرے',
+      'were': 'تھے',
+      'all': 'تمام',
+      'there': 'وہاں',
+      'when': 'جب',
+      'up': 'اوپر',
+      'use': 'استعمال',
+      'your': 'آپ کا',
+      'how': 'کیسے',
+      'our': 'ہمارا',
+      'if': 'اگر',
+      'no': 'نہیں',
+      'had': 'تھا',
+      'what': 'کیا',
+      'so': 'تو',
+      'about': 'کے بارے میں',
+      'blog': 'بلاگ',
+      'content': 'مواد',
+      'article': 'مضمون',
+      'summary': 'خلاصہ',
+      'information': 'معلومات',
+      'important': 'اہم',
+      'main': 'بنیادی',
+      'key': 'کلیدی',
+      'point': 'نکتہ',
+      'technology': 'ٹیکنالوجی',
+      'development': 'ترقی'
     }
     
     return words.map(word => {
@@ -288,6 +414,24 @@ Please format your response as JSON with the following structure:
       keyPoints: basic.keyPoints,
       summaryUrdu
     }
+  }
+
+  /**
+   * Clean up Urdu translation response to remove English text and explanations
+   */
+  private cleanUrduTranslation(text: string): string {
+    // First, extract Urdu text from mixed content
+    let cleanedText = extractUrduText(text)
+    
+    // If no Urdu text found, try to clean the original text
+    if (!containsUrduScript(cleanedText)) {
+      cleanedText = normalizeUrduText(text)
+    }
+    
+    // Post-process the translation
+    cleanedText = postProcessUrduTranslation(cleanedText)
+    
+    return cleanedText
   }
 }
 

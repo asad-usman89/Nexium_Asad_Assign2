@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urdu Translation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .urdu-text {
+            font-size: 18px;
+            line-height: 1.6;
+            direction: rtl;
+            text-align: right;
+            font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', Arial, sans-serif;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Urdu Translation Test</h1>
+        
+        <div class="form-group">
+            <label for="englishText">English Text:</label>
+            <textarea 
+                id="englishText" 
+                rows="4" 
+                placeholder="Enter English text to translate to Urdu..."
+            >This is a test of the Urdu translation system. Technology is advancing rapidly in the modern world.</textarea>
+        </div>
+        
+        <button onclick="translateText()" id="translateBtn">Translate to Urdu</button>
+        
+        <div id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function translateText() {
+            const englishText = document.getElementById('englishText').value.trim();
+            const resultDiv = document.getElementById('result');
+            const translateBtn = document.getElementById('translateBtn');
+            
+            if (!englishText) {
+                alert('Please enter some English text to translate.');
+                return;
+            }
+            
+            // Show loading state
+            translateBtn.disabled = true;
+            translateBtn.textContent = 'Translating...';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading">🔄 Translating to Urdu...</div>';
+            
+            try {
+                const response = await fetch('/api/test-urdu', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: englishText })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>Original English:</h3>
+                            <p>${data.originalText}</p>
+                            
+                            <h3>Direct Gemini Translation:</h3>
+                            <p class="urdu-text">${data.results.directGemini}</p>
+                            
+                            <h3>Translator Wrapper Result:</h3>
+                            <p class="urdu-text">${data.results.translatorWrapper}</p>
+                            
+                            <p><small>Timestamp: ${data.timestamp}</small></p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>Error:</h3>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>Network Error:</h3>
+                        <p>Failed to translate: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                // Reset button state
+                translateBtn.disabled = false;
+                translateBtn.textContent = 'Translate to Urdu';
+            }
+        }
+        
+        // Allow Enter key to trigger translation
+        document.getElementById('englishText').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                translateText();
+            }
+        });
+    </script>
+</body>
+</html>
