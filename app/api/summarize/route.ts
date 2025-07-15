@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { scrapeBlogContent } from '@/lib/scraper'
 import { generateSummary } from '@/lib/summarizer'
 import { translateToUrdu } from '@/lib/translator'
+import { geminiService } from '@/lib/gemini'
 import { databaseService } from '@/lib/database'
 
 export async function POST(request: NextRequest) {
   try {
-    const { url } = await request.json()
+    const { url, useOptimized = true } = await request.json()
 
     if (!url) {
       return NextResponse.json(
@@ -29,13 +30,29 @@ export async function POST(request: NextRequest) {
     console.log('Scraping content from:', url)
     const scrapedContent = await scrapeBlogContent(url)
 
-    // Step 2: Generate summary using static logic
-    console.log('Generating summary...')
-    const summaryResult = generateSummary(scrapedContent.content)
+    let summaryResult, summaryUrdu
 
-    // Step 3: Translate summary to Urdu
-    console.log('Translating to Urdu...')
-    const summaryUrdu = translateToUrdu(summaryResult.summary)
+    if (useOptimized) {
+      // Use optimized combined Gemini operation
+      console.log('Generating summary and translation with Gemini AI (optimized)...')
+      try {
+        const combined = await geminiService.generateSummaryAndTranslation(scrapedContent.content)
+        summaryResult = combined.summary
+        summaryUrdu = combined.translation.translatedText
+      } catch (error) {
+        console.warn('Optimized Gemini operation failed, falling back to separate calls:', error)
+        // Fallback to separate operations
+        summaryResult = await generateSummary(scrapedContent.content)
+        summaryUrdu = await translateToUrdu(summaryResult.summary)
+      }
+    } else {
+      // Use separate operations (original approach)
+      console.log('Generating summary with Gemini AI...')
+      summaryResult = await generateSummary(scrapedContent.content)
+
+      console.log('Translating to Urdu with Gemini AI...')
+      summaryUrdu = await translateToUrdu(summaryResult.summary)
+    }
 
     // Step 4: Save to databases
     console.log('Saving to databases...')
@@ -64,7 +81,9 @@ export async function POST(request: NextRequest) {
         originalLength: summaryResult.originalLength,
         mongoId,
         supabaseId,
-        scrapedAt: scrapedContent.scrapedAt
+        scrapedAt: scrapedContent.scrapedAt,
+        aiPowered: true,
+        optimizedMode: useOptimized
       }
     })
 

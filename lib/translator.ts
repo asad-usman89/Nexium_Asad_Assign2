@@ -1,4 +1,6 @@
-// Simple English to Urdu dictionary for common words
+import { geminiService } from './gemini'
+
+// Simple English to Urdu dictionary for common words (kept as fallback)
 export const englishToUrdu: { [key: string]: string } = {
   // Common words
   "the": "یہ",
@@ -148,8 +150,21 @@ export const englishToUrdu: { [key: string]: string } = {
   "implementation": "نافذ کرنا"
 }
 
-// Function to translate text to Urdu using the dictionary
-export function translateToUrdu(text: string): string {
+// Function to translate text to Urdu using Gemini AI (with dictionary fallback)
+export async function translateToUrdu(text: string): Promise<string> {
+  // Try AI-powered translation first
+  try {
+    const geminiResult = await geminiService.translateToUrdu(text)
+    return geminiResult.translatedText
+  } catch (error) {
+    console.warn('Gemini translation failed, falling back to dictionary method:', error)
+    // Fall back to dictionary-based translation
+    return translateToUrduStatic(text)
+  }
+}
+
+// Function to translate text to Urdu using the dictionary (static method)
+export function translateToUrduStatic(text: string): string {
   const words = text.toLowerCase().split(/\s+/)
   
   const translatedWords = words.map(word => {

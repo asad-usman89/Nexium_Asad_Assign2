@@ -1,3 +1,5 @@
+import { geminiService } from './gemini'
+
 export interface SummaryResult {
   summary: string
   keyPoints: string[]
@@ -5,7 +7,19 @@ export interface SummaryResult {
   originalLength: number
 }
 
-export function generateSummary(content: string): SummaryResult {
+export async function generateSummary(content: string): Promise<SummaryResult> {
+  // Try AI-powered summarization first
+  try {
+    const geminiResult = await geminiService.generateSummary(content)
+    return geminiResult
+  } catch (error) {
+    console.warn('Gemini summarization failed, falling back to static method:', error)
+    // Fall back to static summarization
+    return generateStaticSummary(content)
+  }
+}
+
+export function generateStaticSummary(content: string): SummaryResult {
   // Clean and prepare the content
   const cleanContent = content
     .replace(/\s+/g, ' ')
