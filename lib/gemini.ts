@@ -182,7 +182,7 @@ Urdu translation:
       }
     }
 
-    console.error('All translation attempts failed, using fallback')
+    console.error('All translation attempts failed, using fallback. Last error:', lastError?.message)
     return {
       originalText: text,
       translatedText: this.fallbackTranslation(text),
