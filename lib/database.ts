@@ -2,9 +2,10 @@ import clientPromise from './mongodb'
 import { supabase } from './supabase'
 import { ScrapedContent } from './scraper'
 import { SummaryResult } from './summarizer'
+import { ObjectId } from 'mongodb'
 
 export interface BlogPost {
-  _id?: string
+  _id?: ObjectId | string
   title: string
   content: string
   url: string
@@ -122,7 +123,6 @@ export class DatabaseService {
       const db = client.db('blog_summarizer')
       const collection = db.collection<BlogPost>('blog_posts')
 
-      const { ObjectId } = require('mongodb')
       const blogPost = await collection.findOne({ _id: new ObjectId(id) })
 
       return blogPost
@@ -168,7 +168,7 @@ export class DatabaseService {
 
     // Test Supabase
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('blog_summaries')
         .select('count', { count: 'exact' })
         .limit(1)
