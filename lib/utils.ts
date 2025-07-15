@@ -66,7 +66,7 @@ export class RetryHandler {
  * Response validator for API responses
  */
 export class ResponseValidator {
-  static validateJson(text: string): any {
+  static validateJson(text: string): unknown {
     try {
       // Clean common markdown formatting
       const cleanText = text
@@ -80,20 +80,22 @@ export class ResponseValidator {
     }
   }
   
-  static validateSummaryResponse(response: any): boolean {
-    return (
+  static validateSummaryResponse(response: unknown): response is { summary: string; keyPoints: string[] } {
+    return !!(
       response &&
       typeof response === 'object' &&
-      typeof response.summary === 'string' &&
-      Array.isArray(response.keyPoints)
+      response !== null &&
+      typeof (response as { summary?: string }).summary === 'string' &&
+      Array.isArray((response as { keyPoints?: string[] }).keyPoints)
     )
   }
   
-  static validateTranslationResponse(response: any): boolean {
-    return (
+  static validateTranslationResponse(response: unknown): response is { summaryUrdu: string } {
+    return !!(
       response &&
       typeof response === 'object' &&
-      typeof response.summaryUrdu === 'string'
+      response !== null &&
+      typeof (response as { summaryUrdu?: string }).summaryUrdu === 'string'
     )
   }
 }

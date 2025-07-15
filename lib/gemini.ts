@@ -78,7 +78,7 @@ Please format your response as JSON with the following structure:
         if (!ResponseValidator.validateSummaryResponse(parsedResponse)) {
           throw new Error('Invalid summary response structure')
         }
-      } catch (parseError) {
+      } catch {
         // Fallback: extract summary and key points manually
         console.warn('Failed to parse JSON response, using fallback extraction')
         parsedResponse = this.extractSummaryFromText(text)
@@ -173,7 +173,7 @@ Please format your response as JSON with the following structure:
       try {
         const cleanText = text.replace(/```json\n?|\n?```/g, '').trim()
         parsedResponse = JSON.parse(cleanText)
-      } catch (parseError) {
+      } catch {
         console.warn('Failed to parse JSON response, using fallback extraction')
         parsedResponse = this.extractSummaryAndTranslationFromText(text)
       }
@@ -253,7 +253,7 @@ Please format your response as JSON with the following structure:
     const lines = text.split('\n').filter(line => line.trim())
     
     let summary = ''
-    let keyPoints: string[] = []
+    const keyPoints: string[] = []
     
     // Look for summary-like content
     for (const line of lines) {
