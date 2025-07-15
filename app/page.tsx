@@ -296,7 +296,7 @@ export default function Home() {
 
             {/* Content Tabs */}
             <div className="w-full">
-              <div className="grid w-full grid-cols-4 h-12 glass-effect rounded-lg p-1 mb-4">
+              <div className="grid w-full grid-cols-3 h-12 glass-effect rounded-lg p-1 mb-4">
                 <button
                   onClick={() => setActiveTab('summary')}
                   className={`tab-button rounded-md text-lg font-medium transition-all duration-300 ${
@@ -326,16 +326,6 @@ export default function Home() {
                   }`}
                 >
                   Key Points
-                </button>
-                <button
-                  onClick={() => setActiveTab('original')}
-                  className={`tab-button rounded-md text-lg font-medium transition-all duration-300 ${
-                    activeTab === 'original' 
-                      ? 'active bg-white shadow-sm text-gray-900' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Original Text
                 </button>
               </div>
               
@@ -397,24 +387,6 @@ export default function Home() {
                           </p>
                         </div>
                       ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {activeTab === 'original' && (
-                <Card className="shadow-lg border-0 glass-effect">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-xl">
-                      <Globe className="w-6 h-6 text-gray-600" />
-                      Original Article Content
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-lg max-w-none">
-                      <div className="prose-custom text-gray-700 leading-relaxed whitespace-pre-line text-lg">
-                        {result.content || 'Original content not available'}
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
