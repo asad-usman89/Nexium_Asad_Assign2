@@ -94,16 +94,16 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen gradient-bg animate-gradient p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Brain className="w-10 h-10 text-purple-600" />
+            <Brain className="w-10 h-10 text-purple-600 animate-pulse" />
             <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               Blog Summariser
             </h1>
-            <Sparkles className="w-10 h-10 text-blue-600" />
+            <Sparkles className="w-10 h-10 text-blue-600 animate-pulse" />
           </div>
           <p className="text-gray-600 text-lg">
             Powered by Google Gemini AI • MongoDB • Supabase
@@ -111,7 +111,7 @@ export default function Home() {
         </div>
 
         {/* Input Section */}
-        <Card className="mb-8 shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+        <Card className="mb-8 shadow-lg border-0 glass-effect">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-2xl">
               <Globe className="w-6 h-6 text-blue-600" />
@@ -130,7 +130,7 @@ export default function Home() {
                     placeholder="https://example.com/blog-post"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    className="w-full h-12 text-lg"
+                    className="w-full h-12 text-lg transition-all duration-300 focus:scale-105"
                     disabled={loading}
                     required
                   />
@@ -138,7 +138,7 @@ export default function Home() {
                 <Button 
                   type="submit"
                   disabled={loading} 
-                  className="h-12 px-8 text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  className="h-12 px-8 text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-300 hover:scale-105"
                 >
                   {loading ? (
                     <>
@@ -153,17 +153,17 @@ export default function Home() {
               
               {/* AI Settings */}
               <div className="flex items-center gap-4 text-sm text-gray-600 mt-4">
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={optimizedMode}
                     onChange={(e) => setOptimizedMode(e.target.checked)}
-                    className="rounded"
+                    className="rounded transition-all duration-200"
                   />
                   <span>⚡ Optimized Mode (faster processing)</span>
                 </label>
                 <div className="flex items-center gap-1">
-                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                   <span>Gemini AI Active</span>
                 </div>
               </div>
@@ -173,19 +173,19 @@ export default function Home() {
 
         {/* Progress Steps */}
         {loading && (
-          <Card className="mb-8 shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+          <Card className="mb-8 shadow-lg border-0 glass-effect">
             <CardContent className="pt-6">
               <div className="space-y-4">
                 {steps.map((stepText, index) => (
-                  <div key={index} className="flex items-center gap-3">
+                  <div key={index} className="flex items-center gap-3 transition-all duration-300">
                     {index < step ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <CheckCircle className="w-5 h-5 text-green-500 animate-pulse" />
                     ) : index === step ? (
                       <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
                     ) : (
                       <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
                     )}
-                    <span className={`${index < step ? 'text-green-700' : index === step ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
+                    <span className={`transition-all duration-300 ${index < step ? 'text-green-700 font-medium' : index === step ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
                       {stepText}
                     </span>
                   </div>
@@ -197,7 +197,7 @@ export default function Home() {
 
         {/* Error Alert */}
         {error && (
-          <Alert className="mb-8 border-red-200 bg-red-50 shadow-lg">
+          <Alert className="mb-8 border-red-200 bg-red-50 shadow-lg glass-effect">
             <XCircle className="w-5 h-5 text-red-600" />
             <AlertDescription className="text-red-800 text-lg">{error}</AlertDescription>
           </Alert>
@@ -207,11 +207,11 @@ export default function Home() {
         {result && (
           <div className="space-y-8">
             {/* Article Info */}
-            <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+            <Card className="shadow-lg border-0 glass-effect">
               <CardHeader>
                 <CardTitle className="text-2xl text-gray-800">{result.title}</CardTitle>
                 <CardDescription className="flex flex-wrap gap-4 text-lg">
-                  <span>Source: <a href={result.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  <span>Source: <a href={result.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline transition-colors">
                     {result.url}
                   </a></span>
                   {result.author && (
@@ -238,7 +238,7 @@ export default function Home() {
                   <span>Original length: {result.originalLength} characters</span>
                   {result.aiPowered && (
                     <span className="flex items-center gap-1 text-green-600">
-                      <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                      <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                       AI-Powered
                     </span>
                   )}
@@ -249,7 +249,7 @@ export default function Home() {
                 {result.tags && result.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-4">
                     {result.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-sm">
+                      <Badge key={index} variant="secondary" className="text-sm transition-all duration-200 hover:scale-105">
                         {tag}
                       </Badge>
                     ))}
@@ -260,12 +260,12 @@ export default function Home() {
 
             {/* Content Tabs */}
             <div className="w-full">
-              <div className="grid w-full grid-cols-4 h-12 bg-white/70 backdrop-blur-sm rounded-lg p-1 mb-4">
+              <div className="grid w-full grid-cols-4 h-12 glass-effect rounded-lg p-1 mb-4">
                 <button
                   onClick={() => setActiveTab('summary')}
-                  className={`rounded-md text-lg font-medium transition-all ${
+                  className={`tab-button rounded-md text-lg font-medium transition-all duration-300 ${
                     activeTab === 'summary' 
-                      ? 'bg-white shadow-sm text-gray-900' 
+                      ? 'active bg-white shadow-sm text-gray-900' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -273,9 +273,9 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setActiveTab('urdu')}
-                  className={`rounded-md text-lg font-medium transition-all ${
+                  className={`tab-button rounded-md text-lg font-medium transition-all duration-300 ${
                     activeTab === 'urdu' 
-                      ? 'bg-white shadow-sm text-gray-900' 
+                      ? 'active bg-white shadow-sm text-gray-900' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -283,9 +283,9 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setActiveTab('keypoints')}
-                  className={`rounded-md text-lg font-medium transition-all ${
+                  className={`tab-button rounded-md text-lg font-medium transition-all duration-300 ${
                     activeTab === 'keypoints' 
-                      ? 'bg-white shadow-sm text-gray-900' 
+                      ? 'active bg-white shadow-sm text-gray-900' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -293,9 +293,9 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setActiveTab('original')}
-                  className={`rounded-md text-lg font-medium transition-all ${
+                  className={`tab-button rounded-md text-lg font-medium transition-all duration-300 ${
                     activeTab === 'original' 
-                      ? 'bg-white shadow-sm text-gray-900' 
+                      ? 'active bg-white shadow-sm text-gray-900' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -304,7 +304,7 @@ export default function Home() {
               </div>
               
               {activeTab === 'summary' && (
-                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                <Card className="shadow-lg border-0 glass-effect">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-xl">
                       <FileText className="w-6 h-6 text-blue-600" />
@@ -314,7 +314,7 @@ export default function Home() {
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-lg max-w-none">
-                      <p className="text-gray-700 leading-relaxed text-lg">
+                      <p className="prose-custom text-gray-700 leading-relaxed text-lg">
                         {result.summary}
                       </p>
                     </div>
@@ -323,7 +323,7 @@ export default function Home() {
               )}
               
               {activeTab === 'urdu' && (
-                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                <Card className="shadow-lg border-0 glass-effect">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-xl">
                       <Languages className="w-6 h-6 text-purple-600" />
@@ -333,7 +333,7 @@ export default function Home() {
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-lg max-w-none">
-                      <p className="text-gray-700 leading-relaxed text-lg text-right" dir="rtl">
+                      <p className="prose-custom text-gray-700 leading-relaxed text-lg text-right" dir="rtl">
                         {result.summaryUrdu}
                       </p>
                     </div>
@@ -342,7 +342,7 @@ export default function Home() {
               )}
               
               {activeTab === 'keypoints' && (
-                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                <Card className="shadow-lg border-0 glass-effect">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-xl">
                       <Sparkles className="w-6 h-6 text-green-600" />
@@ -352,11 +352,11 @@ export default function Home() {
                   <CardContent>
                     <div className="space-y-4">
                       {result.keyPoints.map((point, index) => (
-                        <div key={index} className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                        <div key={index} className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg transition-all duration-300 hover:scale-105">
                           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
                             {index + 1}
                           </div>
-                          <p className="text-gray-700 text-lg leading-relaxed flex-1">
+                          <p className="prose-custom text-gray-700 text-lg leading-relaxed flex-1">
                             {point}
                           </p>
                         </div>
@@ -367,7 +367,7 @@ export default function Home() {
               )}
               
               {activeTab === 'original' && (
-                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                <Card className="shadow-lg border-0 glass-effect">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-xl">
                       <Globe className="w-6 h-6 text-gray-600" />
@@ -376,7 +376,7 @@ export default function Home() {
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-lg max-w-none">
-                      <div className="text-gray-700 leading-relaxed whitespace-pre-line text-lg">
+                      <div className="prose-custom text-gray-700 leading-relaxed whitespace-pre-line text-lg">
                         {result.content || 'Original content not available'}
                       </div>
                     </div>
@@ -386,7 +386,7 @@ export default function Home() {
             </div>
 
             {/* Database Storage Status */}
-            <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+            <Card className="shadow-lg border-0 glass-effect">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl">
                   <Database className="w-6 h-6 text-orange-600" />
@@ -395,7 +395,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                  <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 transition-all duration-300 hover:scale-105">
                     <div className="flex items-center gap-3 mb-4">
                       <CheckCircle className="w-6 h-6 text-green-600" />
                       <span className="font-bold text-green-800 text-lg">MongoDB</span>
@@ -406,7 +406,7 @@ export default function Home() {
                       <p><strong>Processed:</strong> {new Date(result.scrapedAt).toLocaleString()}</p>
                     </div>
                   </div>
-                  <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                  <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 transition-all duration-300 hover:scale-105">
                     <div className="flex items-center gap-3 mb-4">
                       <CheckCircle className="w-6 h-6 text-blue-600" />
                       <span className="font-bold text-blue-800 text-lg">Supabase</span>
