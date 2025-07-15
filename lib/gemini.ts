@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { RateLimiter, RetryHandler, ResponseValidator } from './utils'
 
 // Initialize Gemini API with error handling
 let genAI: GoogleGenerativeAI | null = null
@@ -28,7 +27,6 @@ export interface GeminiTranslationResult {
 
 export class GeminiService {
   private model = genAI?.getGenerativeModel({ model: "gemini-pro" })
-  private rateLimiter = RateLimiter.getInstance('gemini', 1000) // 1 second between calls
 
   /**
    * Check if Gemini API is available
@@ -62,11 +60,7 @@ Please format your response as JSON with the following structure:
 }
 `
 
-      const result = await this.rateLimiter.throttle(async () => {
-        return await RetryHandler.retry(async () => {
-          return await this.model!.generateContent(prompt)
-        }, 3, 1000)
-      })
+      const result = await this.model!.generateContent(prompt)
 
       const response = await result.response
       const text = response.text()
@@ -74,8 +68,11 @@ Please format your response as JSON with the following structure:
       // Try to parse JSON response
       let parsedResponse
       try {
-        parsedResponse = ResponseValidator.validateJson(text)
-        if (!ResponseValidator.validateSummaryResponse(parsedResponse)) {
+        const cleanText = text.replace(/```json\n?|\n?```/g, '').trim()
+        parsedResponse = JSON.parse(cleanText)
+        
+        // Basic validation
+        if (!parsedResponse.summary || !Array.isArray(parsedResponse.keyPoints)) {
           throw new Error('Invalid summary response structure')
         }
       } catch {

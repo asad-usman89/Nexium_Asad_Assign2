@@ -223,7 +223,6 @@ curl -X POST http://localhost:3000/api/test-gemini \
 
 ## ⚠️ Current Limitations
 
-- Gemini API rate limits (depends on your plan)
 - Web scraping may fail on complex sites
 - Basic error handling for edge cases
 - No authentication system
