@@ -1,7 +1,17 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { RateLimiter, RetryHandler, ResponseValidator } from './utils'
 
-// Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+// Initialize Gemini API with error handling
+let genAI: GoogleGenerativeAI | null = null
+try {
+  if (process.env.GEMINI_API_KEY) {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  } else {
+    console.warn('GEMINI_API_KEY not found in environment variables')
+  }
+} catch (error) {
+  console.error('Failed to initialize Gemini AI:', error)
+}
 
 export interface GeminiSummaryResult {
   summary: string
@@ -17,12 +27,24 @@ export interface GeminiTranslationResult {
 }
 
 export class GeminiService {
-  private model = genAI.getGenerativeModel({ model: "gemini-pro" })
+  private model = genAI?.getGenerativeModel({ model: "gemini-pro" })
+  private rateLimiter = RateLimiter.getInstance('gemini', 1000) // 1 second between calls
+
+  /**
+   * Check if Gemini API is available
+   */
+  private isAvailable(): boolean {
+    return genAI !== null && this.model !== undefined
+  }
 
   /**
    * Generate AI-powered summary using Gemini
    */
   async generateSummary(content: string): Promise<GeminiSummaryResult> {
+    if (!this.isAvailable()) {
+      throw new Error('Gemini API is not available. Please check your API key.')
+    }
+
     try {
       const prompt = `
 Please analyze and summarize the following blog content. Provide:
@@ -40,16 +62,22 @@ Please format your response as JSON with the following structure:
 }
 `
 
-      const result = await this.model.generateContent(prompt)
+      const result = await this.rateLimiter.throttle(async () => {
+        return await RetryHandler.retry(async () => {
+          return await this.model!.generateContent(prompt)
+        }, 3, 1000)
+      })
+
       const response = await result.response
       const text = response.text()
       
       // Try to parse JSON response
       let parsedResponse
       try {
-        // Clean the response in case it has markdown formatting
-        const cleanText = text.replace(/```json\n?|\n?```/g, '').trim()
-        parsedResponse = JSON.parse(cleanText)
+        parsedResponse = ResponseValidator.validateJson(text)
+        if (!ResponseValidator.validateSummaryResponse(parsedResponse)) {
+          throw new Error('Invalid summary response structure')
+        }
       } catch (parseError) {
         // Fallback: extract summary and key points manually
         console.warn('Failed to parse JSON response, using fallback extraction')
@@ -73,6 +101,10 @@ Please format your response as JSON with the following structure:
    * Translate text to Urdu using Gemini
    */
   async translateToUrdu(text: string): Promise<GeminiTranslationResult> {
+    if (!this.isAvailable()) {
+      throw new Error('Gemini API is not available. Please check your API key.')
+    }
+
     try {
       const prompt = `
 Translate the following English text to Urdu. 
@@ -83,7 +115,7 @@ Text to translate:
 ${text}
 `
 
-      const result = await this.model.generateContent(prompt)
+      const result = await this.model!.generateContent(prompt)
       const response = await result.response
       const translatedText = response.text().trim()
 
@@ -110,6 +142,10 @@ ${text}
     summary: GeminiSummaryResult
     translation: GeminiTranslationResult
   }> {
+    if (!this.isAvailable()) {
+      throw new Error('Gemini API is not available. Please check your API key.')
+    }
+
     try {
       const prompt = `
 Please analyze the following blog content and provide:
@@ -128,7 +164,7 @@ Please format your response as JSON with the following structure:
 }
 `
 
-      const result = await this.model.generateContent(prompt)
+      const result = await this.model!.generateContent(prompt)
       const response = await result.response
       const text = response.text()
       
