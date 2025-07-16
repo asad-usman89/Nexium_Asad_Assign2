@@ -2,6 +2,14 @@
 
 A Next.js application that scrapes blog posts, generates intelligent summaries using **Google Gemini AI**, translates to Urdu, and stores data in MongoDB and Supabase.
 
+---
+
+## 🔗 Live Demo
+
+🌐 [View the App on Vercel](https://nexium-asad-assign2.vercel.app/)
+
+---
+
 ## ✨ Features
 
 - **🌐 Web Scraping**: Extracts content from blog URLs using Cheerio
@@ -13,6 +21,8 @@ A Next.js application that scrapes blog posts, generates intelligent summaries u
   - Supabase: Stores summaries for quick access
 - **🎨 Modern UI**: Clean, responsive interface built with Tailwind CSS
 - **🔧 Fallback Systems**: Robust error handling with static logic fallbacks
+
+---
 
 ## 🚀 Setup Instructions
 
@@ -63,6 +73,8 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to use the application.
+
+---
 
 ## 🔗 API Endpoints
 
@@ -131,6 +143,8 @@ Test individual Gemini AI functions.
 }
 ```
 
+---
+
 ## 📁 Project Structure
 
 ```
@@ -155,6 +169,8 @@ Test individual Gemini AI functions.
 └── README.md
 ```
 
+---
+
 ## 🔄 How It Works
 
 1. **Input**: User enters a blog URL
@@ -168,6 +184,8 @@ Test individual Gemini AI functions.
    - Summary → Supabase
 6. **Display**: Results shown in the AI-enhanced UI
 
+---
+
 ## 🛠️ Technology Stack
 
 - **Frontend**: Next.js 15, React 19, Tailwind CSS
@@ -176,6 +194,8 @@ Test individual Gemini AI functions.
 - **Databases**: MongoDB, Supabase
 - **Scraping**: Cheerio, Axios
 - **Language**: TypeScript
+
+---
 
 ## 🚀 Development
 
@@ -195,6 +215,8 @@ npm start
 # Run linter
 npm run lint
 ```
+
+---
 
 ## 🔍 Testing
 
@@ -221,12 +243,16 @@ curl -X POST http://localhost:3000/api/test-gemini \
   -d '{"action": "combined", "text": "Your blog content here"}'
 ```
 
+---
+
 ## ⚠️ Current Limitations
 
 - Web scraping may fail on complex sites
 - Basic error handling for edge cases
 - No authentication system
 - Limited web scraping compatibility
+
+---
 
 ## 🔮 Future Enhancements
 
@@ -242,3 +268,14 @@ curl -X POST http://localhost:3000/api/test-gemini \
 - Add summary history and management
 - Improve web scraping for different website structures
 - Add support for multiple languages
+
+---
+
+## 👨‍💻 Author
+
+**Asad Ur Rehman**  
+BS Computer Science, FAST NUCES Karachi 
+🌐 Connect: [www.linkedin.com/in/asad-ur-rehman-5b8112267](https://www.linkedin.com/in/asad-ur-rehman-5b8112267/)  
+💬 Passionate about clean UI, purposeful tech, and continuous learning  
+
+> _“Persistence outshines short bursts — even the smallest daily steps can create unstoppable momentum over time..”_
