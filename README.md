@@ -188,12 +188,14 @@ Test individual Gemini AI functions.
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: Next.js 15, React 19, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **AI**: Google Gemini AI
-- **Databases**: MongoDB, Supabase
-- **Scraping**: Cheerio, Axios
-- **Language**: TypeScript
+|Tool           | Use Case                            |
+|---------------|-------------------------------------|
+| **Frontend**  | Next.js 15, React 19, Tailwind CSS  |
+| **Backend**   | Next.js API Routes                  |
+| **AI**        | Google Gemini AI                    |
+| **Databases** | MongoDB, Supabase                   |
+| **Scraping**  | Cheerio, Axios                      |
+| **Language**  | TypeScript                          |
 
 ---
 
